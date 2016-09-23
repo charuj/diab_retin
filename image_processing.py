@@ -18,3 +18,10 @@ sips -Z 100 *.jpeg
 '''
 
 
+# List all files of a directory
+from os import listdir
+from os.path import isfile, join
+onlyfiles= [f for f in listdir("sample") if isfile(join("sample", f))]
+
+
+
