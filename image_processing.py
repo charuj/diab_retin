@@ -1,6 +1,3 @@
-import numpy as np
-from PIL import Image
-
 
 '''
 
@@ -18,10 +15,33 @@ sips -Z 100 *.jpeg
 '''
 
 
+import numpy as np
+from numpy import genfromtxt
+import cPickle as pickle
+from PIL import Image
+
+
 # List all files of the directory containing the images
 import os
 from os import listdir
 from os.path import isfile, join
+
+
+# Open the csv which contains the labels for the images (i.e. the rating)
+# import csv
+# with open('trainLabels2.csv', 'rb') as csvfile:
+#     filereader= csv.reader(csvfile, delimiter=' ', quotechar='|')
+#
+
+image_labels = genfromtxt('trainLabels2.csv', delimiter=',')  # convert CSV into array
+print image_labels.shape
+image_labels= image_labels[1:, :]
+sample_labels= image_labels[:10,1]
+np.delete(sample_labels, 2,0)
+np.delete(sample_labels, 2, 0)
+
+Y= sample_labels.reshape([sample_labels.shape[0],1])
+
 
 
 
@@ -52,9 +72,13 @@ for i in range(len(images_list)):
 del images_list[2]
 del images_list[2]
 
+print "After Deletion"
 for i in range(len(images_list)):
     print images_list[i].shape
 
-images_array = np.vstack(images_list)
+images_array = np.vstack(images_list)  # build an array of all the images
 
-print images_array.shape  
+print images_array.shape
+
+pickle.dump(images_array, open( "file_images_array.p", "wb" ))
+
