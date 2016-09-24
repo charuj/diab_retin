@@ -18,10 +18,36 @@ sips -Z 100 *.jpeg
 '''
 
 
-# List all files of a directory
+# List all files of the directory containing the images
+import os
 from os import listdir
 from os.path import isfile, join
-onlyfiles= [f for f in listdir("sample") if isfile(join("sample", f))]
+
+
+
+cwd = os.getcwd()  # Get the current working directory (cwd)
+newcwd = os.chdir("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
+files = os.listdir("/Users/charujaiswal/PycharmProjects/diab_retin/sample")  # Get all the files in that directory
+print("Files in '%s': %s" % (newcwd, files))
+
+
+root= "/Users/charujaiswal/PycharmProjects/diab_retin/sample"
+
+images_list= []
+for item in os.listdir("/Users/charujaiswal/PycharmProjects/diab_retin/sample"):
+    if not item.startswith('.') and isfile(join(root, item)): # to get rid of the hidden file ".DS_Store"; http://stackoverflow.com/questions/15235823/how-to-ignore-hidden-files-in-python-functions
+        img= Image.open(item)
+        arr = np.array(img) # at this point each individual array will be 3D
+        pixels= arr.flatten()
+        images_list.append(pixels)
+
+images_array= np.array(images_list)
+print images_array.shape()
+#
+# # Convert images to pixel and rgb values
+# img = Image.open(onlyfiles[2])
+# arr= np.array(img)
+# print arr.shape()
 
 
 
