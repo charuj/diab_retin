@@ -40,9 +40,9 @@ sample_labels= image_labels[:10,1]
 np.delete(sample_labels, 2,0)
 np.delete(sample_labels, 2, 0)
 
-Y= sample_labels.reshape([sample_labels.shape[0],1])
+Y_sample= sample_labels.reshape([sample_labels.shape[0],1])
 
-
+pickle.dump(Y_sample, open( "sampletarget_labels.p", "wb" ))
 
 
 cwd = os.getcwd()  # Get the current working directory (cwd)
