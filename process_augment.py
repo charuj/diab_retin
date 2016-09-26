@@ -10,9 +10,9 @@ What's included:
 '''
 
 import numpy as np
+
 from PIL import Image, ImageChops
 
-# http://stackoverflow.com/questions/10615901/trim-whitespace-using-pil/10616717#10616717
 def trim(img):
     bg = Image.new(img.mode, img.size, img.getpixel((0,0))) # get border colour from the top left pixel using getpixel; this is so I don't have to pass it the border colour
     diff = ImageChops.difference(img, bg) # subtracts a scalar from the
