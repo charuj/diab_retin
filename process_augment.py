@@ -10,8 +10,23 @@ What's included:
 '''
 
 import numpy as np
+from PIL import Image
 
-from PIL import Image, ImageChops
+
+#CROP B
+
+def trim(im):
+    '''
+
+    :param im: original retinal image that is to be cropped (the black border)
+    :return: cropped image in RGB; does not crop every trace of border, leaves some as a safe measure against over-cropping
+    '''
+    im= Image. open(im)
+    im2= im.crop(im.getbbox())
+    return im2
+
+
+'''This version crops too much, better to crop using simple bounding box
 
 def trim(img):
     bg = Image.new(img.mode, img.size, img.getpixel((0,0))) # get border colour from the top left pixel using getpixel; this is so I don't have to pass it the border colour
@@ -21,7 +36,10 @@ def trim(img):
     if bbox:
         return img.crop(bbox)
 
-
-img= Image.open("10_left.jpeg")
+from PIL import Image
+img= Image.open("13_left.jpeg")
 img= trim(img)
 img.show()
+'''
+
+
