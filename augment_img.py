@@ -56,17 +56,28 @@ def get_image_arrays(directory):
     return list_arrays
 
 
-def rgb_pca(img):
+def rgb_pca(item):
     '''ALTERING INTENSITIES OF RGB CHANNELS
     From Krizhevsky et al. 2012: http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
     perform PCA on the set of RGB pixel values throughout the training set
     "PCA could approximately capture an important property of natural images, namely, that object identity is invariant to
     changes in the intensity and color of the illumination '''
 
-    # This function also flattens the images (is a replacement for image_processing.py)
+    # This function also flattens the images
+
+    # for now i'm going to run an image through this and open the image here as well because get_image_arrays is not working
+    img = Image.open(item)
+    arr = np.array(img)
+    print arr
+    return arr
 
 
-list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
+
+## MAIN ##
+
+# list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
+arr= rgb_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
+
 
 
 
