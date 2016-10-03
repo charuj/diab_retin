@@ -56,7 +56,7 @@ def get_image_arrays(directory):
     return list_arrays
 
 
-def rgb_pca(item):
+def compute_pca(item):
     '''ALTERING INTENSITIES OF RGB CHANNELS
     From Krizhevsky et al. 2012: http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
     perform PCA on the set of RGB pixel values throughout the training set
@@ -66,18 +66,46 @@ def rgb_pca(item):
     # This function also flattens the images
 
     # for now i'm going to run an image through this and open the image here as well because get_image_arrays is not working
+
+    #Reshape the original image array from height x width x channels ---> to (height*width)x channels
     img = Image.open(item)
     arr = np.array(img)
-    print arr
-    return arr
+    reshaped_array= arr.reshape([arr.shape[0]*arr.shape[1], arr.shape[2]])
+
+    # Get covariance matrix, eigenvectors, and eigenvalues
+    cov= np.dot(reshaped_array.T, reshaped_array) # makes a 3X3 covariance matrix
+    U,S,V= np.linalg.svd(cov)
+    eigenval= np.sqrt(S) # cov is symmetric and positive semi-definite
+    eigen_dim1= eigenval.shape[0]
+    eigenvalues= eigenval.reshape(eigen_dim1, 1)
+
+    return arr, eigenvalues, U
+
+
+def add_colour_noise(image_array, eigenvalues, U, mu=0.0, sigma=0.1):
+    # Generate alpha, which is a random variable drawn from a Gaussian with mean 0 and std dev 0.1
+    # Alpha is drawn only once for all the pixels of a particular image in a round of training
+    # one alpha value per RGB (i.e. 3 alphas)
+    # for i in xrange(number of samples) ### fix this later, should loop over the number of samples in the training set (i.e. num images)
+
+    alphas= np.random.normal(mu, sigma, 3) # 3 for R,G,B
+    augmentation= alphas * eigenvalues
+    noise= np.dot(U, augmentation.T)
+
+    # add noise to the image array
+    #adjusted_img= image_array.T + noise
+
+    return 1
+
 
 
 
 ## MAIN ##
 
 # list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
-arr= rgb_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
+image_array, eigenvalues, U= compute_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
 
 
+addcol= add_colour_noise(image_array, eigenvalues, U, mu=0.0, sigma=0.1)
 
 
