@@ -5,7 +5,7 @@ Additional preprocessing/augmentation than what is in image_processing.py
 What's included:
 
 1. Cropping border: uses PIL's built-in bounding-box detection
-2.
+2. Augmenting the RGB channels by doing PCA (variance)
 
 '''
 
@@ -74,28 +74,28 @@ def compute_pca(item):
 
     # Get covariance matrix, eigenvectors, and eigenvalues
     cov= np.dot(reshaped_array.T, reshaped_array) # makes a 3X3 covariance matrix
-    U,S,V= np.linalg.svd(cov)
+    eigenvectors,S,V= np.linalg.svd(cov)
     eigenval= np.sqrt(S) # cov is symmetric and positive semi-definite
     eigen_dim1= eigenval.shape[0]
     eigenvalues= eigenval.reshape(eigen_dim1, 1)
 
-    return arr, eigenvalues, U
+    return arr, eigenvalues, eigenvectors
 
 
-def add_colour_noise(image_array, eigenvalues, U, mu=0.0, sigma=0.1):
+def add_colour_noise(image_array, eigenvalues, eigenvectors, mu=0.0, sigma=0.1):
     # Generate alpha, which is a random variable drawn from a Gaussian with mean 0 and std dev 0.1
     # Alpha is drawn only once for all the pixels of a particular image in a round of training
     # one alpha value per RGB (i.e. 3 alphas)
     # for i in xrange(number of samples) ### fix this later, should loop over the number of samples in the training set (i.e. num images)
 
-    alphas= np.random.normal(mu, sigma, 3) # 3 for R,G,B
-    augmentation= alphas * eigenvalues
-    noise= np.dot(U, augmentation.T)
+    alphas= np.random.normal(mu, sigma, [3,3]) # 3 for R,G,B
+    augmentation= np.dot(alphas, eigenvalues)
+    noise= np.dot(eigenvectors, augmentation)
 
     # add noise to the image array
-    #adjusted_img= image_array.T + noise
+    adjusted_img= image_array + noise.T # gives original dimension (this is how to check if it works)
 
-    return 1
+    return adjusted_img
 
 
 
@@ -103,9 +103,9 @@ def add_colour_noise(image_array, eigenvalues, U, mu=0.0, sigma=0.1):
 ## MAIN ##
 
 # list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
-image_array, eigenvalues, U= compute_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
+image_array, eigenvalues, eigenvectors= compute_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
 
 
-addcol= add_colour_noise(image_array, eigenvalues, U, mu=0.0, sigma=0.1)
+augmented_img= add_colour_noise(image_array, eigenvalues, eigenvectors, mu=0.0, sigma=0.1)
 
 
