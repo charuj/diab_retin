@@ -5,7 +5,9 @@ Additional preprocessing/augmentation than what is in image_processing.py
 What's included:
 
 1. Cropping border: uses PIL's built-in bounding-box detection
-2. Augmenting the RGB channels by doing PCA (variance)
+2. Augmenting the RGB channels by doing PCA (variance) a la Krizhevsky et al. 2012
+    https://groups.google.com/forum/#!topic/lasagne-users/meCDNeA9Ud4
+    
 
 '''
 
