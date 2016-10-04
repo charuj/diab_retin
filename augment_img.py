@@ -25,7 +25,8 @@ def trim(im):
     '''
     im= Image. open(im)
     im2= im.crop(im.getbbox())
-    return im2
+    arr = np.array(im2)
+    return arr
 
 
 '''This version crops too much, better to crop using simple bounding box
@@ -68,8 +69,8 @@ def compute_pca(item):
     # for now i'm going to run an image through this and open the image here as well because get_image_arrays is not working
 
     #Reshape the original image array from height x width x channels ---> to (height*width)x channels
-    img = Image.open(item)
-    arr = np.array(img)
+    #img = Image.open(item)
+    arr = item
     reshaped_array= arr.reshape([arr.shape[0]*arr.shape[1], arr.shape[2]])
 
     # Get covariance matrix, eigenvectors, and eigenvalues
@@ -103,9 +104,8 @@ def add_colour_noise(image_array, eigenvalues, eigenvectors, mu=0.0, sigma=0.1):
 ## MAIN ##
 
 # list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
-image_array, eigenvalues, eigenvectors= compute_pca("10_left.jpeg") # works when the image is in the main directory, not the sample directory
-
-
+im_array= trim("10_left.jpeg")
+image_array, eigenvalues, eigenvectors= compute_pca(im_array) # works when the image is in the main directory, not the sample directory
 augmented_img= add_colour_noise(image_array, eigenvalues, eigenvectors, mu=0.0, sigma=0.1)
 
 
