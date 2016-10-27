@@ -133,7 +133,7 @@ def add_colour_noise(list_cropped_images, eigenvalues_list, eigenvectors_list, m
     :param eigenvectors_list: output of compute_pca, list of eigenvators, where each element in list corresponds to an image
     :param mu: mean, set to 0
     :param sigma: std dev, set to 0.1
-    :return: a list of adjusted images in 3 dimension, where each element in the list corresponds to one image. Shape of list= 
+    :return: a list of adjusted images in 3 dimension, where each element in the list corresponds to one image. Shape of list=
     '''
 
 
@@ -157,8 +157,6 @@ def add_colour_noise(list_cropped_images, eigenvalues_list, eigenvectors_list, m
     return list_adjusted_img
 
 
-
-
 ## MAIN ##
 
 # list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
@@ -166,4 +164,5 @@ list_im_arrays= trim("/Users/charujaiswal/PycharmProjects/diab_retin/sample/")
 eigenvalues_list, eigenvectors_list= compute_pca(list_im_arrays)
 list_adjusted_img= add_colour_noise(list_im_arrays, eigenvalues_list, eigenvectors_list, mu=0.0, sigma=0.1)
 
+pickle.dump(list_adjusted_img, open( "file_images_array_processed.p", "wb" ))
 
