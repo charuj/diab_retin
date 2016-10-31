@@ -21,6 +21,8 @@ sample_labels= image_labels[:10,1] # the first 10 are the samples; for entire da
 list_images_array= pickle.load( open( "file_images_array_processed.p", "rb" ) )
 image_size= (64,64) # change this as needed; should be a # divisible by 2 many times
 
+
+
 def resize(list_images_array, image_size):
     '''
 
@@ -32,9 +34,10 @@ def resize(list_images_array, image_size):
 
     resized_image_list=[]
 
-    for image in list_images_array:
-
-        resized_img= ImageOps.fit(image, image_size, Image.ANTIALIAS)
+    for image  in list_images_array:
+        # FIGURED out what the bug is: the ImageOps fit functions gets the shape of image by calling image.size[0] INSTEAD of image.shape[0]
+        # resized_img= ImageOps.fit(image, image_size, Image.ANTIALIAS)
+        resized_img= tf.image.resize_image_with_crop_or_pad(tf.convert_to_tensor(image), 64,64)
         resized_image_list.append(resized_img)
 
     return resized_image_list
@@ -59,6 +62,7 @@ def generate_image_and_label_batch(resized_image_list, labels, min_queue_example
 
 
     num_preprocess_threads= 16 # what is this?
+    resized_image_list=tf.to_float(resized_image_list)
     if shuffle:
         images_batch, labels_batch= tf.train.shuffle_batch([resized_image_list, labels],
                                                            batch_size=batch_size,
@@ -80,4 +84,5 @@ def generate_image_and_label_batch(resized_image_list, labels, min_queue_example
 
 ## MAIN ##
 
-image_batch, label_batch= generate_image_and_label_batch(list_images_array, sample_labels, )
+resized_image_list= resize(list_images_array, image_size)
+image_batch, label_batch= generate_image_and_label_batch(resized_image_list[0], sample_labels, 2, 2, shuffle=True)
