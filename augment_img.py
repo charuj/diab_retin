@@ -12,19 +12,21 @@ What's included:
 '''
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import os
 import os.path
 from os.path import isfile, join
 import cPickle as pickle
+from numpy import genfromtxt
 
-cropped_images= pickle.load( open( "file_cropped.p", "rb" ) )
 
 
 #CROPPING BORDERS
 
-def trim(directory):
+def trim_resize(directory, image_size):
     '''
+
+    Trims some of the black border that surrounds the images, and resizes them to be the same size.
 
     :param im: original retinal image that is to be cropped (the black border in particular)
     :return: a list of 3D arrays, where each array corresponds to one cropped image. The third dimension is the RGB channel
@@ -39,7 +41,8 @@ def trim(directory):
         # if item.endswith('.jpeg') and isfile(join(directory,item)):
             im= Image.open(directory+ item)
             im2= im.crop(im.getbbox())
-            arr = np.array(im2)
+            resized_img= ImageOps.fit(im2, image_size, Image.ANTIALIAS)
+            arr = np.array(resized_img)
             list_arrays.append(arr)
     return list_arrays
 '''
@@ -157,12 +160,16 @@ def add_colour_noise(list_cropped_images, eigenvalues_list, eigenvectors_list, m
     return list_adjusted_img
 
 
+
 ## MAIN ##
 
 # list_arrays= get_image_arrays("/Users/charujaiswal/PycharmProjects/diab_retin/sample")
-list_im_arrays= trim("/Users/charujaiswal/PycharmProjects/diab_retin/sample/")
+image_size= (64,64)
+list_im_arrays= trim_resize("/Users/charujaiswal/PycharmProjects/diab_retin/sample/", image_size)
 eigenvalues_list, eigenvectors_list= compute_pca(list_im_arrays)
 list_adjusted_img= add_colour_noise(list_im_arrays, eigenvalues_list, eigenvectors_list, mu=0.0, sigma=0.1)
 
 pickle.dump(list_adjusted_img, open( "file_images_array_processed.p", "wb" ))
 
+#TODO: code for targets
+# TODO: create a 4D array with image + it's label
