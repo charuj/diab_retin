@@ -3,9 +3,6 @@
 import cPickle as pickle
 import numpy as np
 from numpy import genfromtxt
-from PIL import Image, ImageOps
-import tensorflow as tf
-import random
 
 
 #LABELS
