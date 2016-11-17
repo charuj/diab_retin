@@ -148,7 +148,25 @@ def avg_pool(x, k=2 ):
     return pooled
 
 
+def max_pool(x, k=2 ):
+    '''
+
+    :param x: input tensor, which is the output of the conv2d function, should be type float32
+    :param ksize: A list of ints that has length >= 4. The size of the window for each dimension of the input tensor.
+    :param strides: A list of ints that has length >= 4. The stride of the sliding window for each dimension of the input tensor.
+    :return: A Tensor with type tf.float32. The avg pooled output tensor
+    '''
+
+    pooled= tf.nn.max_pool(x, ksize=[1,k,k,1], strides=[1,k,k,1], padding='SAME')
+    return pooled
+
+
 def basic_block(x):
+    '''
+
+    :param x: input tensor
+    :return: output of 1 block of resnet
+    '''
 
     shortcut= x
     with tf.variable_scope("conv1"):
@@ -165,6 +183,33 @@ def basic_block(x):
         batch_norm= bn(conv)
         add_shortcut= tf.add(batch_norm, shortcut)
         return relu(add_shortcut)
+
+def model(x):
+    '''
+
+    :param x: input images as tensors (or batches)
+    :return: prediction
+    '''
+    # Conv layers; each block has 2 conv layers
+    l1= basic_block(x)
+    l2= basic_block(l1)
+    l3= basic_block(l2)
+    l4= basic_block(l3)
+    l5= basic_block(l4)
+    pooled= avg_pool(l5)
+
+    weights_fc= tf.get_variable('w', [5,5,1,64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d())
+    bias_fc= tf.get_variable('b', [64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d())
+    # Fully connected layer
+    fc1= tf.reshape(pooled, [-1, weights_fc.get_shape().as_list()[0]])
+    fc1 = tf.add(tf.matmul(fc1, weights_fc),bias_fc)
+    output = tf.nn.relu(fc1)
+
+    return output
+
+
+
+
 
 
 
