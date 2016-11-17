@@ -5,7 +5,7 @@
 - Also see: http://torch.ch/blog/2016/02/04/resnets.html
 
 The residual block here looks like this:
-[ Input > Convolution Layer > Batch normalization > ReLU > Convolution > BN > Addition of Input > RelU > Output  ]
+[ Input > Convolution Layer > Batch normalization > ReLU > Convolution > BN > Addition of Input/Shortcut > RelU > Output  ]
 
 I'm going to be stacking these blocks.
 
@@ -45,12 +45,14 @@ learning_rate= 0.0001
 training_iters= 100
 batch_size= 5
 display_step= 2
+epsilon= 1e-3 # small epsilon value for the batch normalization transform
 
 
 #Network parameters
 n_input= augment_img.image_size[0] * augment_img.image_size[1]
 n_classes= 5
 dropout= 0.5 # prob of keeping a unit
+hidden_size = 100 # number of neurons in each hidden layer
 
 # tf Graph input
 x= tf.placeholder(tf.float32, [batch_size, augment_img.image_size[0], augment_img.image_size[1], 3], name= 'Images')
@@ -82,7 +84,7 @@ For conv2d, these vectors are multiplied by the filter[di, dj, :, :] matrices to
 
 '''
 
-def conv2d(x, W, b, strides=1):
+def conv2d(x, W, b,strides=1):
     '''
 
     :param x: tensor of type half, float32, or float64
@@ -92,6 +94,7 @@ def conv2d(x, W, b, strides=1):
                     Must be in the same order as the dimension specified with format.
     :return: a Conv2D wrapper with bias.
     '''
+
 
     x= tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME') # uses tf builtin wrapper
     preactivation= tf.nn.bias_add(x,b) # adding the bias
@@ -107,8 +110,10 @@ def bn(preactivation):
     '''
 
     batch_mean, batch_var= tf.nn.moments(preactivation, [0]) # axes 0
-    beta= tf.Variable(tf.zeros([SHAPE])) # Figure out dimension --> size of layer?
-    scale= tf.Variable(tf.ones([SHAPE])) # Dimension --> size of layer
+    beta= tf.Variable(tf.zeros(hidden_size))
+    gamma= tf.Variable(tf.ones(hidden_size))
+    batch_norm= tf.nn.batch_normalization(preactivation, batch_mean, batch_var,beta,gamma, epsilon)
+    return batch_norm
 
 
 def relu(preactivation):
@@ -118,7 +123,6 @@ def relu(preactivation):
     :return: thresholded (i.e. put through ReLU)
     '''
     return tf.nn.relu(preactivation)
-
 
 
 '''
@@ -142,5 +146,26 @@ def avg_pool(x, k=2 ):
 
     pooled= tf.nn.avg_pool(x, ksize=[1,k,k,1], strides=[1,k,k,1], padding='SAME')
     return pooled
+
+
+def basic_block(x):
+
+    shortcut= x
+    with tf.variable_scope("conv1"):
+
+        weights= tf.get_variable('w', [5,5,1,64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d()) # 5x5 conv, 1 input, 64 outputs
+        bias = tf.get_variable('b', [64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d())
+        conv= conv2d(x, weights, bias, strides=1)
+        batch_norm= bn(conv)
+        relu1= relu(batch_norm)
+    with tf.variable_scope("conv2"):
+        weights= tf.get_variable('w', [5,5,1,64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d())
+        bias = tf.get_variable('b', [64], tf.float32, tf.contrib.layers.xavier_initializer_conv2d())
+        conv= conv2d(relu1, weights, bias, strides=1)
+        batch_norm= bn(conv)
+        add_shortcut= tf.add(batch_norm, shortcut)
+        return relu(add_shortcut)
+
+
 
 
